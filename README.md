@@ -44,8 +44,8 @@ In this model, we use the Multi30K dataset as our train and test dataset.As trai
 
 # [Environment Requirements](#content)
 
-- Hardware（Ascend）
-    - Prepare hardware environment with Ascend processor.
+- Hardware（Ascend or GPU）
+    - Prepare hardware environment with Ascend processor or Nvidia GPU.
 - Framework
     - [MindSpore](https://gitee.com/mindspore/mindspore)
 - For more information, please check the resources below：
@@ -79,13 +79,13 @@ After dataset preparation, you can start training and evaluation as follows:
 ```bash
 # run training example
 cd ./scripts
-sh run_standalone_train.sh [TRAIN_DATASET_PATH]
+bash run_standalone_train.sh [TRAIN_DATASET_PATH]
 
 # run distributed training example
-sh run_distribute_train_ascend.sh [RANK_TABLE_FILE] [TRAIN_DATASET_PATH]
+bash run_distribute_train_ascend.sh [RANK_TABLE_FILE] [TRAIN_DATASET_PATH]
 
 # run evaluation example
-sh run_eval.sh [CKPT_FILE] [DATASET_PATH]
+bash run_eval.sh [CKPT_FILE] [DATASET_PATH]
 ```
 
 # [Script Description](#content)
