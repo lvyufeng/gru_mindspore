@@ -16,6 +16,7 @@
 import os
 import argparse
 import mindspore.common.dtype as mstype
+from mindspore import log as logger
 from mindspore.common.tensor import Tensor
 from mindspore.train.model import Model
 from mindspore.train.serialization import load_checkpoint, load_param_into_net
@@ -30,7 +31,7 @@ def run_gru_eval():
     Transformer evaluation.
     """
     parser = argparse.ArgumentParser(description='GRU eval')
-    parser.add_argument("--device_target", type=str, default="GPU",
+    parser.add_argument("--device_target", type=str, default="Ascend",
                         help="device where the code will be implemented, default is Ascend")
     parser.add_argument('--device_id', type=int, default=0, help='device id of GPU or Ascend, default is 0')
     parser.add_argument('--device_num', type=int, default=1, help='Use device nums, default is 1')
@@ -41,6 +42,10 @@ def run_gru_eval():
 
     context.set_context(mode=context.GRAPH_MODE, device_target=args.device_target, reserve_class_name_in_scope=False, \
         device_id=args.device_id, save_graphs=False)
+    if args.device_target == "GPU":
+        if config.compute_type != mstype.float32:
+            logger.warning('GPU only support fp32 temporarily, run with fp32.')
+            config.compute_type = mstype.float32
     mindrecord_file = args.dataset_path
     if not os.path.exists(mindrecord_file):
         print("dataset file {} not exists, please check!".format(mindrecord_file))

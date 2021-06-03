@@ -43,7 +43,9 @@ class DynamicRNN(nn.Cell):
         t = 0
         h = h_0
         while t < time_step:
-            h = self.cell(x[t], h, w_ih, w_hh, b_ih, b_hh)
+            x_t = x[t:t+1:1]
+            x_t = P.Squeeze(0)(x_t)
+            h = self.cell(x_t, h, w_ih, w_hh, b_ih, b_hh)
             if self.is_lstm:
                 outputs.append(h[0])
             else:
@@ -70,7 +72,9 @@ class DynamicRNN(nn.Cell):
         state_t = h_t
         t = 0
         while t < time_step:
-            h_t = self.cell(x[t], state_t, w_ih, w_hh, b_ih, b_hh)
+            x_t = x[t:t+1:1]
+            x_t = P.Squeeze(0)(x_t)
+            h_t = self.cell(x_t, state_t, w_ih, w_hh, b_ih, b_hh)
             seq_cond = seq_length > t
             if self.is_lstm:
                 state_t_0 = P.Select()(seq_cond, h_t[0], state_t[0])
@@ -200,7 +204,6 @@ class RNNBase(nn.Cell):
         else:
             h_n = P.Concat(0)(h_n)
             return output, h_n.view(h.shape)
-        return x, h
     
     def _stacked_dynamic_rnn(self, x, h, seq_length):
         """stacked mutil_layer dynamic_rnn"""

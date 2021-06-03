@@ -14,6 +14,7 @@
 # ============================================================================
 """GRU config"""
 from easydict import EasyDict
+import mindspore.common.dtype as mstype
 
 config = EasyDict({
     "batch_size": 16,
@@ -37,5 +38,7 @@ config = EasyDict({
     'scale_factor': 2,
     'scale_window': 2000,
     "warmup_ratio": 1/3.0,
-    "teacher_force_ratio": 0.5
+    "teacher_force_ratio": 0.5,
+    "compute_type": mstype.float16,
+    "dtype": mstype.float32
 })

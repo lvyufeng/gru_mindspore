@@ -17,8 +17,10 @@ import os
 import time
 import argparse
 import ast
+import mindspore.common.dtype as mstype
 from mindspore.context import ParallelMode
 from mindspore import context
+from mindspore import log as logger
 from mindspore.communication.management import init
 from mindspore.train.callback import Callback, CheckpointConfig, ModelCheckpoint, TimeMonitor
 from mindspore.train import Model
@@ -33,6 +35,8 @@ from src.lr_schedule import dynamic_lr
 set_seed(1)
 
 parser = argparse.ArgumentParser(description="GRU training")
+parser.add_argument("--device_target", type=str, default="Ascend",
+                    help="device where the code will be implemented, default is Ascend")
 parser.add_argument("--run_distribute", type=ast.literal_eval, default=False, help="Run distribute, default: false.")
 parser.add_argument("--dataset_path", type=str, default=None, help="Dataset path")
 parser.add_argument("--pre_trained", type=str, default=None, help="Pretrained file path.")
@@ -43,7 +47,11 @@ parser.add_argument('--ckpt_path', type=str, default='outputs/', help='Checkpoin
 parser.add_argument('--outputs_dir', type=str, default='./', help='Checkpoint save location. Default: outputs/')
 args = parser.parse_args()
 
-context.set_context(mode=context.GRAPH_MODE, device_target="GPU", device_id=args.device_id, save_graphs=False)
+context.set_context(mode=context.GRAPH_MODE, device_target=args.device_target, device_id=args.device_id, save_graphs=False)
+if args.device_target == "GPU":
+    if config.compute_type != mstype.float32:
+        logger.warning('GPU only support fp32 temporarily, run with fp32.')
+        config.compute_type = mstype.float32
 
 def get_ms_timestamp():
     t = time.time()
