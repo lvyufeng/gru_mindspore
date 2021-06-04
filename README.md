@@ -12,6 +12,8 @@
     - [Configuration File](#configuration-file)
     - [Training Process](#training-process)
     - [Inference Process](#inference-process)
+    - [Export MindIR](#export-mindir)
+    - [Inference Process](#inference-process)
 - [Model Description](#model-description)
     - [Performance](#performance)
         - [Training Performance](#training-performance)
@@ -79,13 +81,14 @@ After dataset preparation, you can start training and evaluation as follows:
 ```bash
 # run training example
 cd ./scripts
-bash run_standalone_train.sh [TRAIN_DATASET_PATH]
+bash run_standalone_train_{platform}.sh [TRAIN_DATASET_PATH]
 
 # run distributed training example
 bash run_distribute_train_ascend.sh [RANK_TABLE_FILE] [TRAIN_DATASET_PATH]
 
 # run evaluation example
-bash run_eval.sh [CKPT_FILE] [DATASET_PATH]
+bash run_eval_{platform}.sh [CKPT_FILE] [DATASET_PATH]
+# platform: gpu or ascend
 ```
 
 # [Script Description](#content)
@@ -96,7 +99,9 @@ The GRU network script and code result are as follows:
 ├── gru
   ├── README.md                              // Introduction of GRU model.
   ├── src
-  |   ├──gru.py                              // gru cell architecture.
+  │   ├──rnn_cells.py                        // rnn cell architecture, include rnn, lstm, gru cell.
+  │   ├──rnns.py                             // rnn operators.
+  │   ├──utils.py                            // utils for GPU version model, include operators like Reverse and ReverseSequence.
   │   ├──config.py                           // Configuration instance definition.
   │   ├──create_data.py                      // Dataset preparation.
   │   ├──dataset.py                          // Dataset loader to feed into model.
@@ -113,9 +118,11 @@ The GRU network script and code result are as follows:
   │   ├──create_dataset.sh                   // shell script for create dataset.
   │   ├──parse_output.sh                     // shell script for parse eval output file to calculate BLEU.
   │   ├──preprocess.sh                       // shell script for preprocess dataset.
-  │   ├──run_distributed_train.sh            // shell script for distributed train on ascend.
-  │   ├──run_eval.sh                         // shell script for standalone eval on ascend.
-  │   ├──run_standalone_train.sh             // shell script for standalone eval on ascend.
+  │   ├──run_distributed_train_ascend.sh     // shell script for distributed train on ascend.
+  │   ├──run_eval_gpu.sh                     // shell script for standalone eval on GPU.
+  │   ├──run_standalone_train_gpu.sh         // shell script for standalone eval on GPU.
+  │   ├──run_eval_ascend.sh                  // shell script for standalone eval on ascend.
+  │   ├──run_standalone_train_ascend.sh      // shell script for standalone eval on ascend.
   ├── eval.py                                // Infer API entry.
   ├── requirements.txt                       // Requirements of third party package.
   ├── train.py                               // Train API entry.
@@ -185,14 +192,16 @@ Parameters for both training and evaluation can be set in config.py. All the dat
 
     ```bash
     cd ./scripts
-    sh run_standalone_train.sh [DATASET_PATH]
+    sh run_standalone_train_{platform}.sh [DATASET_PATH]
+    # platform: gpu or ascend
     ```
 
 - Running scripts for distributed training of GRU. Task training on multiple device and run the following command in bash to be executed in `scripts/`:
 
     ``` bash
     cd ./scripts
-    sh run_distributed_train.sh [RANK_TABLE_PATH] [DATASET_PATH]
+    sh run_distributed_train_{platform}.sh [RANK_TABLE_PATH] [DATASET_PATH]
+    # platform: gpu or ascend
     ```
 
 ## [Inference Process](#content)
@@ -201,7 +210,7 @@ Parameters for both training and evaluation can be set in config.py. All the dat
 
     ``` bash
     cd ./scripts
-    sh run_eval.sh [CKPT_FILE] [DATASET_PATH]
+    sh run_eval_{platform}.sh [CKPT_FILE] [DATASET_PATH]
     ```
 
 - After evalulation, we will get eval/target.txt and eval/output.txt.Then we can use scripts/parse_output.sh to get the translation.
@@ -219,41 +228,78 @@ Parameters for both training and evaluation can be set in config.py. All the dat
 
 Note: The `DATASET_PATH` is path to mindrecord. eg. train: /dataset_path/multi30k_train_mindrecord_0  eval: /dataset_path/multi30k_test_mindrecord
 
+## [Export MindIR](#contents)
+
+```shell
+python export.py --ckpt_file [CKPT_PATH] --file_name [FILE_NAME] --file_format [FILE_FORMAT]
+```
+
+The ckpt_file parameter is required,
+`EXPORT_FORMAT` should be in ["AIR", "MINDIR"]
+
+## [Inference Process](#contents)
+
+### Usage
+
+Before performing inference, the mindir file must be exported by export.py. Input files must be in bin format.
+
+```shell
+# Ascend310 inference
+bash run_infer_310.sh [MINDIR_PATH] [DATASET_PATH] [NEED_PREPROCESS] [DEVICE_ID]
+```
+
+`NEED_PREPROCESS` means weather need preprocess or not, it's value is 'y' or 'n'.
+`DEVICE_ID` is optional, default value is 0.
+
+### result
+
+we will get target.txt and output.txt.Then we can use scripts/parse_output.sh to get the translation.
+
+``` bash
+sh parse_output.sh target.txt output.txt /path/vocab.en
+```
+
+After parse output, we will get target.txt.forbleu and output.txt.forbleu.To calculate BLEU score, you may use this [perl script](https://github.com/moses-smt/mosesdecoder/blob/master/scripts/generic/multi-bleu.perl) and run following command to get the BLEU score.
+
+```bash
+perl multi-bleu.perl target.txt.forbleu < output.txt.forbleu
+```
+
 # [Model Description](#content)
 
 ## [Performance](#content)
 
 ### Training Performance
 
-| Parameters                 | Ascend                                                         |
-| -------------------------- | -------------------------------------------------------------- |
-| Resource                   | Ascend 910; OS Euler2.8                                                     |
-| uploaded Date              | 01/18/2021 (month/day/year)                                    |
-| MindSpore Version          | 1.1.0                                                          |
-| Dataset                    | Multi30k Dataset                                |
-| Training Parameters        | epoch=30, batch_size=16                                        |
-| Optimizer                  | Adam                                                           |
-| Loss Function              | NLLLoss                                                        |
-| outputs                    | probability                                                    |
-| Speed                      | 50ms/step (1pcs)                                              |
-| Epoch Time                 | 13.4s (1pcs)                                                   |
-| Loss                       | 2.5984                                                          |
-| Params (M)                 | 21                                                            |
-| Checkpoint for inference   | 272M (.ckpt file)                                              |
-| Scripts                    | [gru](https://gitee.com/mindspore/mindspore/tree/master/model_zoo/official/nlp/gru) |
+| Parameters                 | Ascend                                                         | GPU|
+| -------------------------- | -------------------------------------------------------------- |--------------------------------------------------------------|
+| Resource                   | Ascend 910; OS Euler2.8                                                     | GTX1080Ti, Ubuntu 18.04|
+| uploaded Date              | 06/05/2021 (month/day/year)           | 06/05/2021 (month/day/year)                           |
+| MindSpore Version          | 1.2.0                                                          |1.2.0                          
+| Dataset                    | Multi30k Dataset    | Multi30k Dataset                            |
+| Training Parameters        | epoch=30, batch_size=16             | epoch=30, batch_size=16                               |
+| Optimizer                  | Adam                       | Adam                                                           |
+| Loss Function              | NLLLoss                 | NLLLoss                                                        |
+| outputs                    | probability               | probability                                                    |
+| Speed                      | 35ms/step (1pcs)  | 200ms/step (1pcs)                                              |
+| Epoch Time                 | 64.4s (1pcs)                      | 361.5s (1pcs)                                                   |
+| Loss                       | 3.86888                                                          |2.533958|
+| Params (M)                 | 21                                                            | 21 |
+| Checkpoint for inference   | 272M (.ckpt file)                                              | 272M (.ckpt file)  
+| Scripts                    | [gru](https://gitee.com/mindspore/mindspore/tree/master/model_zoo/official/nlp/gru) |[gru](https://gitee.com/mindspore/mindspore/tree/master/model_zoo/official/nlp/gru) |
 
 ### Inference Performance
 
-| Parameters          | Ascend                      |
-| ------------------- | --------------------------- |
-| Resource            | Ascend 910; OS Euler2.8                   |
-| Uploaded Date       | 01/18/2020 (month/day/year) |
-| MindSpore Version   | 1.1.0                       |
-| Dataset             | Multi30K                    |
-| batch_size          | 1                         |
-| outputs             | label index                 |
-| Accuracy            | BLEU: 30.30                        |
-| Model for inference | 272M (.ckpt file)           |
+| Parameters          | Ascend                      | GPU |
+| ------------------- | --------------------------- |---------------------------|
+| Resource            | Ascend 910; OS Euler2.8                   | GTX1080Ti, Ubuntu 18.04|
+| Uploaded Date       | 06/05/2021 (month/day/year) | 06/05/2021 (month/day/year) |
+| MindSpore Version   | 1.2.0                       | 1.2.0|
+| Dataset             | Multi30K                    | Multi30K|
+| batch_size          | 1                         | 1| 
+| outputs             | label index                 | label index 
+| Accuracy            | BLEU: 31.26                        | BLEU: 29.30
+| Model for inference | 272M (.ckpt file)           | 272M (.ckpt file)           |
 
 # [Random Situation Description](#content)
 

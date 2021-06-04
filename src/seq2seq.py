@@ -18,7 +18,6 @@ from mindspore import Tensor
 import mindspore.nn as nn
 import mindspore.ops.operations as P
 import mindspore.common.dtype as mstype
-# from src.gru import BidirectionGRU, GRU
 from src.weight_init import dense_default_state
 from src.rnns import GRU
 
@@ -168,7 +167,6 @@ class Decoder(nn.Cell):
         weight = self.transpose(weight, (1, 0, 2))
         weight = self.cast(weight, self.dtype)
         emd_con = self.concat((embedded, weight))
-        # print(emd_con.shape)
         output, hidden = self.rnn(emd_con)
         output = self.cast(output, self.dtype)
         out = self.concat((embedded, output, weight))
