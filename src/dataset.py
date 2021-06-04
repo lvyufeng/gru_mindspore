@@ -31,7 +31,7 @@ def random_teacher_force(source_ids, target_ids, target_mask):
 def create_gru_dataset(epoch_count=1, batch_size=1, rank_size=1, rank_id=0, do_shuffle=True, dataset_path=None,
                        is_training=True):
     """create dataset"""
-    ds = de.MindDataset(dataset_path, num_parallel_workers=4, 
+    ds = de.MindDataset(dataset_path, num_parallel_workers=4,
                         columns_list=["source_ids", "target_ids",
                                       "target_mask"],
                         shuffle=do_shuffle, num_shards=rank_size, shard_id=rank_id)

@@ -13,17 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
+
 if [ $# -ne 1 ]
 then
-    echo "Usage: sh run_standalone_train_gpu.sh [DATASET_PATH]"
+    echo "Usage: sh run_distribute_train_gpu.sh [DATASET_PATH]"
 exit 1
 fi
-ulimit -u unlimited
-export DEVICE_NUM=1
-export DEVICE_ID=0
-export RANK_ID=0
-export RANK_SIZE=1
-export DEVICE_TARGET="GPU"
+
 get_real_path(){
   if [ "${1:0:1}" == "/" ]; then
     echo "$1"
@@ -40,13 +36,17 @@ then
 exit 1
 fi
 
+ulimit -u unlimited
+export DEVICE_TARGET="GPU"
+export DEVICE_NUM=8
+
 rm -rf ./train
 mkdir ./train
 cp ../*.py ./train
 cp *.sh ./train
 cp -r ../src ./train
 cd ./train || exit
-echo "start training for device $DEVICE_ID"
+echo "start training for $DEVICE_NUM GPUs"
 env > env.log
-python train.py --device_target=$DEVICE_TARGET --device_id=$DEVICE_ID --dataset_path=$DATASET_PATH &> log &
+mpirun -n $DEVICE_NUM python train.py --run_distribute=True --device_target=$DEVICE_TARGET --device_num=$DEVICE_NUM --dataset_path=$DATASET_PATH &> log &
 cd ..

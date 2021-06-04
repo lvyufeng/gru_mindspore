@@ -241,7 +241,6 @@ class GRUTrainOneStepWithLossScaleCell(nn.Cell):
         ret = (loss, cond, scaling_sens)
         return F.depend(ret, succ)
 
-    
 class GRUTrainOneStepCell(nn.TrainOneStepCell):
     """
     Encapsulation class of bert network training.
@@ -254,7 +253,7 @@ class GRUTrainOneStepCell(nn.TrainOneStepCell):
         optimizer (Optimizer): Optimizer for updating the weights.
         sens (Number): The adjust parameter. Default: 1.0.
     """
-    
+
     def __init__(self, network, optimizer, sens=1.0):
         super(GRUTrainOneStepCell, self).__init__(network, optimizer, sens)
         self.cast = P.Cast()
@@ -262,8 +261,7 @@ class GRUTrainOneStepCell(nn.TrainOneStepCell):
 
     def set_sens(self, value):
         self.sens = value
-    
-    
+
     def construct(self,
                   encoder_inputs,
                   decoder_inputs,
@@ -275,7 +273,7 @@ class GRUTrainOneStepCell(nn.TrainOneStepCell):
         loss = self.network(encoder_inputs,
                             decoder_inputs,
                             teacher_force)
-        
+
         grads = self.grad(self.network, weights)(encoder_inputs,
                                                  decoder_inputs,
                                                  teacher_force,

@@ -29,7 +29,7 @@ from mindspore.train.loss_scale_manager import DynamicLossScaleManager
 from mindspore.nn.optim import Adam
 from src.config import config
 from src.seq2seq import Seq2Seq
-from src.gru_for_train import GRUWithLossCell, GRUTrainOneStepWithLossScaleCell, GRUTrainOneStepCell
+from src.gru_for_train import GRUWithLossCell, GRUTrainOneStepWithLossScaleCell
 from src.dataset import create_gru_dataset
 from src.lr_schedule import dynamic_lr
 set_seed(1)
@@ -46,12 +46,6 @@ parser.add_argument("--rank_id", type=int, default=0, help="Rank id, default: 0.
 parser.add_argument('--ckpt_path', type=str, default='outputs/', help='Checkpoint save location. Default: outputs/')
 parser.add_argument('--outputs_dir', type=str, default='./', help='Checkpoint save location. Default: outputs/')
 args = parser.parse_args()
-
-context.set_context(mode=context.GRAPH_MODE, device_target=args.device_target, device_id=args.device_id, save_graphs=False)
-if args.device_target == "GPU":
-    if config.compute_type != mstype.float32:
-        logger.warning('GPU only support fp32 temporarily, run with fp32.')
-        config.compute_type = mstype.float32
 
 def get_ms_timestamp():
     t = time.time()
@@ -98,12 +92,26 @@ class LossCallBack(Callback):
             f.write('\n')
 
 if __name__ == '__main__':
+    context.set_context(mode=context.GRAPH_MODE, device_target=args.device_target, \
+    device_id=args.device_id, save_graphs=False)
+    if args.device_target == "GPU":
+        if config.compute_type != mstype.float32:
+            logger.warning('GPU only support fp32 temporarily, run with fp32.')
+            config.compute_type = mstype.float32
     if args.run_distribute:
-        rank = args.rank_id
-        device_num = args.device_num
-        context.set_auto_parallel_context(device_num=device_num, parallel_mode=ParallelMode.DATA_PARALLEL,
-                                          gradients_mean=True)
-        init()
+        if args.device_target == "Ascend":
+            rank = args.rank_id
+            device_num = args.device_num
+            context.set_auto_parallel_context(device_num=device_num,
+                                              parallel_mode=ParallelMode.DATA_PARALLEL,
+                                              gradients_mean=True)
+            init()
+        elif args.device_target == "GPU":
+            init("nccl")
+            context.set_auto_parallel_context(parallel_mode=ParallelMode.AUTO_PARALLEL,
+                                              gradients_mean=True)
+        else:
+            raise ValueError(args.device_target)
     else:
         rank = 0
         device_num = 1

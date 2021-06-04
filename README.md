@@ -199,9 +199,12 @@ Parameters for both training and evaluation can be set in config.py. All the dat
 - Running scripts for distributed training of GRU. Task training on multiple device and run the following command in bash to be executed in `scripts/`:
 
     ``` bash
+    # if you use Ascend platform
     cd ./scripts
-    sh run_distributed_train_{platform}.sh [RANK_TABLE_PATH] [DATASET_PATH]
-    # platform: gpu or ascend
+    sh run_distributed_train_ascend.sh [RANK_TABLE_PATH] [DATASET_PATH]
+    # if you use GPU platform
+    cd ./scripts
+    sh run_distributed_train_gpu.sh [DATASET_PATH]
     ```
 
 ## [Inference Process](#content)
@@ -271,35 +274,35 @@ perl multi-bleu.perl target.txt.forbleu < output.txt.forbleu
 
 ### Training Performance
 
-| Parameters                 | Ascend                                                         | GPU|
-| -------------------------- | -------------------------------------------------------------- |--------------------------------------------------------------|
-| Resource                   | Ascend 910; OS Euler2.8                                                     | GTX1080Ti, Ubuntu 18.04|
-| uploaded Date              | 06/05/2021 (month/day/year)           | 06/05/2021 (month/day/year)                           |
-| MindSpore Version          | 1.2.0                                                          |1.2.0                          
-| Dataset                    | Multi30k Dataset    | Multi30k Dataset                            |
-| Training Parameters        | epoch=30, batch_size=16             | epoch=30, batch_size=16                               |
-| Optimizer                  | Adam                       | Adam                                                           |
-| Loss Function              | NLLLoss                 | NLLLoss                                                        |
-| outputs                    | probability               | probability                                                    |
-| Speed                      | 35ms/step (1pcs)  | 200ms/step (1pcs)                                              |
-| Epoch Time                 | 64.4s (1pcs)                      | 361.5s (1pcs)                                                   |
-| Loss                       | 3.86888                                                          |2.533958|
-| Params (M)                 | 21                                                            | 21 |
-| Checkpoint for inference   | 272M (.ckpt file)                                              | 272M (.ckpt file)  
+| Parameters                 | Ascend                        | GPU                       |
+| -------------------------- | ----------------------------- |---------------------------|
+| Resource                   | Ascend 910; OS Euler2.8       | GTX1080Ti, Ubuntu 18.04   |
+| uploaded Date              | 06/05/2021 (month/day/year)   | 06/05/2021 (month/day/year) |
+| MindSpore Version          | 1.2.0                         |1.2.0                      |
+| Dataset                    | Multi30k Dataset              | Multi30k Dataset          |
+| Training Parameters        | epoch=30, batch_size=16       | epoch=30, batch_size=16   |
+| Optimizer                  | Adam                          | Adam                      |
+| Loss Function              | NLLLoss                       | NLLLoss                   |
+| outputs                    | probability                   | probability               |
+| Speed                      | 35ms/step (1pcs)              | 200ms/step (1pcs)         |
+| Epoch Time                 | 64.4s (1pcs)                  | 361.5s (1pcs)             |
+| Loss                       | 3.86888                       |2.533958                   |
+| Params (M)                 | 21                            | 21                        |
+| Checkpoint for inference   | 272M (.ckpt file)             | 272M (.ckpt file)         |
 | Scripts                    | [gru](https://gitee.com/mindspore/mindspore/tree/master/model_zoo/official/nlp/gru) |[gru](https://gitee.com/mindspore/mindspore/tree/master/model_zoo/official/nlp/gru) |
 
 ### Inference Performance
 
 | Parameters          | Ascend                      | GPU |
 | ------------------- | --------------------------- |---------------------------|
-| Resource            | Ascend 910; OS Euler2.8                   | GTX1080Ti, Ubuntu 18.04|
-| Uploaded Date       | 06/05/2021 (month/day/year) | 06/05/2021 (month/day/year) |
-| MindSpore Version   | 1.2.0                       | 1.2.0|
-| Dataset             | Multi30K                    | Multi30K|
-| batch_size          | 1                         | 1| 
-| outputs             | label index                 | label index 
-| Accuracy            | BLEU: 31.26                        | BLEU: 29.30
-| Model for inference | 272M (.ckpt file)           | 272M (.ckpt file)           |
+| Resource            | Ascend 910; OS Euler2.8     | GTX1080Ti, Ubuntu 18.04   |
+| Uploaded Date       | 06/05/2021 (month/day/year) | 06/05/2021 (month/day/year)|
+| MindSpore Version   | 1.2.0                       | 1.2.0                     |
+| Dataset             | Multi30K                    | Multi30K                  |
+| batch_size          | 1                           | 1                         |
+| outputs             | label index                 | label index               |
+| Accuracy            | BLEU: 31.26                 | BLEU: 29.30               |
+| Model for inference | 272M (.ckpt file)           | 272M (.ckpt file)         |
 
 # [Random Situation Description](#content)
 

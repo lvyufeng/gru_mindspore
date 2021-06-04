@@ -15,12 +15,12 @@
 # ============================================================================
 if [ $# -ne 1 ]
 then
-    echo "Usage: sh run_distribute_train_ascend.sh [DATASET_PATH]"
+    echo "Usage: sh run_standalone_train_ascend.sh [DATASET_PATH]"
 exit 1
 fi
 ulimit -u unlimited
 export DEVICE_NUM=1
-export DEVICE_ID=4
+export DEVICE_ID=0
 export RANK_ID=0
 export RANK_SIZE=1
 export DEVICE_TARGET="Ascend"
