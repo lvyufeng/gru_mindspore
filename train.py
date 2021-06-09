@@ -29,7 +29,7 @@ from mindspore.train.loss_scale_manager import DynamicLossScaleManager
 from mindspore.nn.optim import Adam
 from src.config import config
 from src.seq2seq import Seq2Seq
-from src.gru_for_train import GRUWithLossCell, GRUTrainOneStepWithLossScaleCell
+from src.gru_for_train import GRUWithLossCell, GRUTrainOneStepWithLossScaleCell, GRUTrainOneStepCell
 from src.dataset import create_gru_dataset
 from src.lr_schedule import dynamic_lr
 set_seed(1)
@@ -82,13 +82,20 @@ class LossCallBack(Callback):
                                                                      cb_params.cur_step_num,
                                                                      str(cb_params.net_outputs)))
         with open("./loss_{}.log".format(self.rank_id), "a+") as f:
-            f.write("time: {}, epoch: {}, step: {}, loss: {}, overflow: {}, loss_scale: {}".format(
-                time_stamp_current - time_stamp_first,
-                cb_params.cur_epoch_num,
-                cb_params.cur_step_num,
-                str(cb_params.net_outputs[0].asnumpy()),
-                str(cb_params.net_outputs[1].asnumpy()),
-                str(cb_params.net_outputs[2].asnumpy())))
+            if context.get_context("device_target") == "Ascend":
+                f.write("time: {}, epoch: {}, step: {}, loss: {}, overflow: {}, loss_scale: {}".format(
+                    time_stamp_current - time_stamp_first,
+                    cb_params.cur_epoch_num,
+                    cb_params.cur_step_num,
+                    str(cb_params.net_outputs[0].asnumpy()),
+                    str(cb_params.net_outputs[1].asnumpy()),
+                    str(cb_params.net_outputs[2].asnumpy())))
+            else:
+                f.write("time: {}, epoch: {}, step: {}, loss: {}".format(
+                    time_stamp_current - time_stamp_first,
+                    cb_params.cur_epoch_num,
+                    cb_params.cur_step_num,
+                    str(cb_params.net_outputs.asnumpy())))
             f.write('\n')
 
 if __name__ == '__main__':
@@ -131,8 +138,10 @@ if __name__ == '__main__':
                                             scale_factor=config.scale_factor,
                                             scale_window=config.scale_window)
     update_cell = scale_manager.get_update_cell()
-    netwithgrads = GRUTrainOneStepWithLossScaleCell(network, opt, update_cell)
-
+    if args.device_target == "Ascend":
+        netwithgrads = GRUTrainOneStepWithLossScaleCell(network, opt, update_cell)
+    else:
+        netwithgrads = GRUTrainOneStepCell(network, opt)
     time_cb = TimeMonitor(data_size=dataset_size)
     loss_cb = LossCallBack(rank_id=rank)
     cb = [time_cb, loss_cb]
