@@ -15,7 +15,7 @@
 # ============================================================================
 if [ $# -ne 2 ]
 then
-    echo "Usage: sh run_eval.sh [CKPT_FILE] [DATASET_PATH]"
+    echo "Usage: sh run_eval_ascend.sh [CKPT_FILE] [DATASET_PATH]"
 exit 1
 fi
 ulimit -u unlimited
@@ -23,6 +23,8 @@ export DEVICE_NUM=1
 export DEVICE_ID=0
 export RANK_ID=0
 export RANK_SIZE=1
+export DEVICE_TARGET="Ascend"
+
 get_real_path(){
   if [ "${1:0:1}" == "/" ]; then
     echo "$1"
@@ -49,12 +51,10 @@ fi
 rm -rf ./eval
 mkdir ./eval
 cp ../*.py ./eval
-cp ../*.yaml ./eval
 cp *.sh ./eval
 cp -r ../src ./eval
-cp -r ../model_utils ./eval
 cd ./eval || exit
 echo "start eval for device $DEVICE_ID"
 env > env.log
-python eval.py --ckpt_file=$CKPT_FILE --dataset_path=$DATASET_PATH &> log &
+python eval.py --device_target=$DEVICE_TARGET --ckpt_file=$CKPT_FILE --dataset_path=$DATASET_PATH --device_id=$DEVICE_ID &> log &
 cd ..

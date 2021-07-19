@@ -15,14 +15,15 @@
 # ============================================================================
 if [ $# -ne 1 ]
 then
-    echo "Usage: sh run_distribute_train_ascend.sh [DATASET_PATH]"
+    echo "Usage: sh run_standalone_train_gpu.sh [DATASET_PATH]"
 exit 1
 fi
 ulimit -u unlimited
 export DEVICE_NUM=1
-export DEVICE_ID=4
+export DEVICE_ID=0
 export RANK_ID=0
 export RANK_SIZE=1
+export DEVICE_TARGET="GPU"
 get_real_path(){
   if [ "${1:0:1}" == "/" ]; then
     echo "$1"
@@ -42,12 +43,10 @@ fi
 rm -rf ./train
 mkdir ./train
 cp ../*.py ./train
-cp ../*.yaml ./train
 cp *.sh ./train
 cp -r ../src ./train
-cp -r ../model_utils ./train
 cd ./train || exit
 echo "start training for device $DEVICE_ID"
 env > env.log
-python train.py --dataset_path=$DATASET_PATH &> log &
+python train.py --device_target=$DEVICE_TARGET --device_id=$DEVICE_ID --dataset_path=$DATASET_PATH &> log &
 cd ..

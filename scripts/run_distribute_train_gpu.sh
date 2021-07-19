@@ -14,9 +14,9 @@
 # limitations under the License.
 # ============================================================================
 
-if [ $# -ne 2 ]
+if [ $# -ne 1 ]
 then
-    echo "Usage: sh run_distribute_train_ascend.sh [RANK_TABLE_FILE] [DATASET_PATH]"
+    echo "Usage: sh run_distribute_train_gpu.sh [DATASET_PATH]"
 exit 1
 fi
 
@@ -28,18 +28,8 @@ get_real_path(){
   fi
 }
 
-PATH1=$(get_real_path $1)
-echo $PATH1
-
-if [ ! -f $PATH1 ]
-then
-    echo "error: RANK_TABLE_FILE=$PATH1 is not a file"
-exit 1
-fi
-
-DATASET_PATH=$(get_real_path $2)
+DATASET_PATH=$(get_real_path $1)
 echo $DATASET_PATH
-
 if [ ! -f $DATASET_PATH ]
 then
     echo "error: DATASET_PATH=$DATASET_PATH is not a file"
@@ -47,23 +37,16 @@ exit 1
 fi
 
 ulimit -u unlimited
-export DEVICE_TARGET="Ascend"
+export DEVICE_TARGET="GPU"
 export DEVICE_NUM=8
-export RANK_SIZE=8
-export RANK_TABLE_FILE=$PATH1
 
-for((i=0; i<${DEVICE_NUM}; i++))
-do
-    export DEVICE_ID=$i
-    export RANK_ID=$i
-    rm -rf ./train_parallel$i
-    mkdir ./train_parallel$i
-    cp ../*.py ./train_parallel$i
-    cp *.sh ./train_parallel$i
-    cp -r ../src ./train_parallel$i
-    cd ./train_parallel$i || exit
-    echo "start training for rank $RANK_ID, device $DEVICE_ID"
-    env > env.log
-    python train.py --device_target=$DEVICE_TARGET --device_id=$i --rank_id=$i --run_distribute=True --device_num=$DEVICE_NUM  --dataset_path=$DATASET_PATH &> log &
-    cd ..
-done
+rm -rf ./train
+mkdir ./train
+cp ../*.py ./train
+cp *.sh ./train
+cp -r ../src ./train
+cd ./train || exit
+echo "start training for $DEVICE_NUM GPUs"
+env > env.log
+mpirun -n $DEVICE_NUM python train.py --run_distribute=True --device_target=$DEVICE_TARGET --device_num=$DEVICE_NUM --dataset_path=$DATASET_PATH &> log &
+cd ..
