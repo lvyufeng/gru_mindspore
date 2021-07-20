@@ -48,5 +48,5 @@ cp -r ../src ./train
 cd ./train || exit
 echo "start training for $DEVICE_NUM GPUs"
 env > env.log
-mpirun -n $DEVICE_NUM python train.py --run_distribute=True --device_target=$DEVICE_TARGET --device_num=$DEVICE_NUM --dataset_path=$DATASET_PATH &> log &
+mpirun -n $DEVICE_NUM python train.py --run_distribute=True --device_target=$DEVICE_TARGET --dataset_path=$DATASET_PATH &> log &
 cd ..

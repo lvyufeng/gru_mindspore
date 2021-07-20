@@ -14,4 +14,4 @@
 # limitations under the License.
 # ============================================================================
 DATASET_DIR=$1
-python src/preprocess.py --dataset_path=$DATASET_DIR
+python ../src/preprocess.py --dataset_path=$DATASET_DIR

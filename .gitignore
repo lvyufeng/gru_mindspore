@@ -134,5 +134,7 @@ train/
 eval/
 output.txt*
 target.txt*
+train_parallel*/
 
 .vscode/
+multi-bleu.perl

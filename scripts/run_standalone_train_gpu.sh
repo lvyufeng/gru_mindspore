@@ -39,14 +39,15 @@ then
     echo "error: DATASET_PATH=$DATASET_PATH is not a file"
 exit 1
 fi
-
 rm -rf ./train
 mkdir ./train
 cp ../*.py ./train
+cp ../*.yaml ./train
 cp *.sh ./train
 cp -r ../src ./train
+cp -r ../model_utils ./train
 cd ./train || exit
 echo "start training for device $DEVICE_ID"
 env > env.log
-python train.py --device_target=$DEVICE_TARGET --device_id=$DEVICE_ID --dataset_path=$DATASET_PATH &> log &
+python train.py --device_target=$DEVICE_TARGET --dataset_path=$DATASET_PATH &> log &
 cd ..

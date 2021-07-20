@@ -51,10 +51,12 @@ fi
 rm -rf ./eval
 mkdir ./eval
 cp ../*.py ./eval
+cp ../*.yaml ./eval
 cp *.sh ./eval
 cp -r ../src ./eval
+cp -r ../model_utils ./eval
 cd ./eval || exit
 echo "start eval for device $DEVICE_ID"
 env > env.log
-python eval.py --device_target=$DEVICE_TARGET --ckpt_file=$CKPT_FILE --dataset_path=$DATASET_PATH --device_id=$DEVICE_ID &> log &
+python eval.py --device_target=$DEVICE_TARGET --ckpt_file=$CKPT_FILE --dataset_path=$DATASET_PATH &> log &
 cd ..

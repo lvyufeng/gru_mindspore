@@ -14,7 +14,7 @@
 # limitations under the License.
 # ============================================================================
 CUR_PATH=`pwd`
-DATA_PATH=${CUR_PATH}/data
+DATA_PATH=${CUR_PATH}/../data
 TRAIN_URL=http://www.quest.dcs.shef.ac.uk/wmt16_files_mmt/training.tar.gz
 VALID_URL=http://www.quest.dcs.shef.ac.uk/wmt16_files_mmt/validation.tar.gz
 TEST_URL=http://www.quest.dcs.shef.ac.uk/wmt16_files_mmt/mmt16_task1_test.tar.gz
